@@ -1,0 +1,20 @@
+# Credentials — never commit these
+gmail_credentials.json
+gmail_token.json
+preferences.json
+
+# Boarding pass screenshots (personal data)
+boarding_passes/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Playwright
+/tmp/
+
+# macOS
+.DS_Store

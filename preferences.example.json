@@ -1,0 +1,24 @@
+{
+  "passenger": {
+    "last_name": "YourLastName",
+    "first_name": "YourFirstName"
+  },
+  "seat_preference": {
+    "type": "aisle",
+    "fallback": "prompt"
+  },
+  "frequent_flyer": {
+    "indigo": {
+      "program": "IndiGo BluChip",
+      "number": "XXXXXXXXX"
+    },
+    "air_india": {
+      "program": "Air India Flying Returns",
+      "number": "XXXXXXXXX"
+    },
+    "air_india_express": {
+      "program": "Air India Flying Returns",
+      "number": "XXXXXXXXX"
+    }
+  }
+}
