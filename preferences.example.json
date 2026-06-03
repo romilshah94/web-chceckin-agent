@@ -1,11 +1,18 @@
 {
   "passenger": {
     "last_name": "YourLastName",
-    "first_name": "YourFirstName"
+    "first_name": "YourFirstName",
+    "email": "you@gmail.com",
+    "phone": "9999999999"
   },
   "seat_preference": {
     "type": "aisle",
     "fallback": "prompt"
+  },
+  "add_ons": {
+    "meal": false,
+    "extra_baggage": false,
+    "skip_all_addons": true
   },
   "frequent_flyer": {
     "indigo": {
@@ -17,8 +24,12 @@
       "number": "XXXXXXXXX"
     },
     "air_india_express": {
-      "program": "Air India Flying Returns",
-      "number": "XXXXXXXXX"
+      "program": "Air India Flying Returns / Maharaja Club",
+      "number": "XXXXXXXXX",
+      "earn_maharaja_points": true
     }
+  },
+  "boarding_pass": {
+    "email": "you@gmail.com"
   }
 }
