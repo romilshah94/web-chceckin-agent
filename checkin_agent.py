@@ -7,6 +7,18 @@ Features:
   - Fetches PNR from Gmail or accepts manual input
   - Loads frequent flyer numbers from preferences.json
   - Auto-selects aisle seat; prompts user if none available
+
+PREFERRED EXECUTION (when running via Claude/AI assistant):
+  Use the Claude Chrome browser extension (MCP: mcp__Claude_in_Chrome__*) to drive check-in
+  in the user's existing Chrome browser. Do NOT launch a new Playwright browser unless the
+  Chrome extension is unavailable. This avoids cookie/session issues and is faster.
+
+PNR NOTE — Corporate bookings (Amex GBT / travel desk):
+  The booking confirmation email contains TWO reference numbers:
+    - Trip/booking ref (e.g. GWW3J6) — this is the TRAVEL AGENCY ref, NOT usable on airline site
+    - Airline confirmation number (e.g. QD929E under "CONFIRMATION NO.") — use THIS as PNR
+  The gmail_fetcher tries to extract PNRs automatically; for corporate bookings always verify
+  against the "CONFIRMATION NO." field in the email.
 """
 import os
 import sys
@@ -149,7 +161,8 @@ def run_checkin(pnr: str, airline_code: str, last_name: str, headless: bool = Fa
         if success:
             print("\n  Check-in flow complete.")
             _save_boarding_pass(page, pnr, airline_code)
-            input("  Press ENTER to close browser (or Ctrl+C to keep it open)...")
+            print("  Browser will stay open for 3 minutes. Close it manually when done.")
+            page.wait_for_timeout(180000)
         else:
             print("\n  Check-in could not be completed automatically.")
             print("  The browser will stay open for 60s so you can complete it manually.")
