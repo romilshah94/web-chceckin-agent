@@ -30,13 +30,40 @@ from typing import Optional
 LAST_NAME = "Shah"
 PREFS_FILE = Path(__file__).parent / "preferences.json"
 
+# Private GitHub repo storing preferences.json
+# Set GITHUB_TOKEN env var or store in .env to enable remote fetch.
+PREFS_REPO = "romilshah94/checkin-prefs"
+PREFS_REMOTE_URL = f"https://api.github.com/repos/{PREFS_REPO}/contents/preferences.json"
+
 
 def load_preferences() -> dict:
+    """Load preferences: tries remote private repo first, falls back to local file."""
+    token = os.environ.get("GITHUB_TOKEN", "")
+    if token:
+        try:
+            import urllib.request
+            req = urllib.request.Request(
+                PREFS_REMOTE_URL,
+                headers={"Authorization": f"token {token}", "Accept": "application/vnd.github.v3.raw"},
+            )
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                prefs = json.loads(resp.read().decode())
+                print("  Preferences loaded from private GitHub repo.")
+                # Cache locally for offline use
+                PREFS_FILE.write_text(json.dumps(prefs, indent=2))
+                return prefs
+        except Exception as e:
+            print(f"  [!] Remote preferences fetch failed: {e}. Falling back to local file.")
+
     if PREFS_FILE.exists():
         try:
-            return json.loads(PREFS_FILE.read_text())
+            prefs = json.loads(PREFS_FILE.read_text())
+            print("  Preferences loaded from local file.")
+            return prefs
         except Exception as e:
             print(f"  [!] Could not load preferences.json: {e}")
+
+    print("  [!] No preferences found. Set GITHUB_TOKEN env var or create preferences.json.")
     return {}
 
 AIRLINES = {
