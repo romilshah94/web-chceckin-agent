@@ -173,14 +173,21 @@ def run_checkin(pnr: str, airline_code: str, last_name: str, headless: bool = Fa
         shutil.copy2(chrome_cookies, f"{tmp_profile}/Default/Cookies")
         print("  Using Chrome cookies for session continuity.")
 
+    # Use system Chrome if available, otherwise fall back to Playwright's Chromium
+    import shutil as _shutil
+    _use_channel = "chrome" if _shutil.which("google-chrome") or _shutil.which("google-chrome-stable") else None
+
     with sync_playwright() as p:
-        context = p.chromium.launch_persistent_context(
+        launch_kwargs = dict(
             user_data_dir=tmp_profile,
-            channel="chrome",
             headless=headless,
             slow_mo=200,
             viewport={"width": 1280, "height": 800},
+            ignore_https_errors=True,
         )
+        if _use_channel:
+            launch_kwargs["channel"] = _use_channel
+        context = p.chromium.launch_persistent_context(**launch_kwargs)
         page = context.new_page()
 
         success = module.checkin(page, pnr, last_name, prefs)
