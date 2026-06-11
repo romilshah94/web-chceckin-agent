@@ -24,10 +24,23 @@ import os
 import sys
 import json
 import argparse
+import platform
+import tempfile
 from pathlib import Path
 from typing import Optional
 
 LAST_NAME = "Shah"
+
+
+def _chrome_cookies_path() -> str:
+    """Return the default Chrome cookies file path for the current OS."""
+    home = Path.home()
+    if sys.platform == "darwin":
+        return str(home / "Library" / "Application Support" / "Google" / "Chrome" / "Default" / "Cookies")
+    elif sys.platform == "win32":
+        return str(home / "AppData" / "Local" / "Google" / "Chrome" / "User Data" / "Default" / "Cookies")
+    else:
+        return str(home / ".config" / "google-chrome" / "Default" / "Cookies")
 PREFS_FILE = Path(__file__).parent / "preferences.json"
 
 # Private GitHub repo storing preferences.json
@@ -161,16 +174,14 @@ def run_checkin(pnr: str, airline_code: str, last_name: str, headless: bool = Fa
     module = importlib.import_module(AIRLINE_MODULES[airline_code])
 
     print(f"\n  Launching browser (headless={headless})...")
-    import shutil, tempfile
+    import shutil
     # Copy Chrome cookies to a temp profile so the IndiGo micro-frontend loads
-    tmp_profile = "/tmp/chrome_tmp_profile"
+    tmp_profile = str(Path(tempfile.gettempdir()) / "chrome_tmp_profile")
     shutil.rmtree(tmp_profile, ignore_errors=True)
-    os.makedirs(f"{tmp_profile}/Default", exist_ok=True)
-    chrome_cookies = (
-        "/Users/romilshah/Library/Application Support/Google/Chrome/Default/Cookies"
-    )
+    os.makedirs(os.path.join(tmp_profile, "Default"), exist_ok=True)
+    chrome_cookies = _chrome_cookies_path()
     if os.path.exists(chrome_cookies):
-        shutil.copy2(chrome_cookies, f"{tmp_profile}/Default/Cookies")
+        shutil.copy2(chrome_cookies, os.path.join(tmp_profile, "Default", "Cookies"))
         print("  Using Chrome cookies for session continuity.")
 
     # Use system Chrome if available, otherwise fall back to Playwright's Chromium

@@ -1,4 +1,6 @@
 """IndiGo web check-in automation — with frequent flyer + seat selection."""
+import tempfile
+from pathlib import Path
 from playwright.sync_api import Page, TimeoutError as PWTimeout
 from seat_selector import pick_aisle_seat, prompt_seat_choice
 
@@ -51,7 +53,7 @@ def checkin(page: Page, pnr: str, last_name: str, prefs: dict) -> bool:
     except PWTimeout:
         page.wait_for_timeout(5000)
 
-    page.screenshot(path="/tmp/indigo_booking_view.png")
+    page.screenshot(path=str(Path(tempfile.gettempdir()) / "indigo_booking_view.png"))
     print("  [IndiGo] Booking loaded.")
 
     # --- Fill Frequent Flyer number if field exists ---
