@@ -180,6 +180,7 @@ def run_checkin(pnr: str, airline_code: str, last_name: str, headless: bool = Fa
             headless=headless,
             slow_mo=200,
             viewport={"width": 1280, "height": 800},
+            ignore_https_errors=True,
         )
         page = context.new_page()
 
@@ -188,12 +189,16 @@ def run_checkin(pnr: str, airline_code: str, last_name: str, headless: bool = Fa
         if success:
             print("\n  Check-in flow complete.")
             _save_boarding_pass(page, pnr, airline_code)
-            print("  Browser will stay open for 3 minutes. Close it manually when done.")
-            page.wait_for_timeout(180000)
+            if not headless:
+                print("  Browser will stay open for 3 minutes. Close it manually when done.")
+                page.wait_for_timeout(180000)
         else:
             print("\n  Check-in could not be completed automatically.")
-            print("  The browser will stay open for 60s so you can complete it manually.")
-            page.wait_for_timeout(60000)
+            # Always take a screenshot of the current state for inspection
+            _save_boarding_pass(page, pnr, airline_code)
+            if not headless:
+                print("  The browser will stay open for 60s so you can complete it manually.")
+                page.wait_for_timeout(60000)
 
         context.close()
 
