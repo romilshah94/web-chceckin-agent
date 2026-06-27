@@ -173,14 +173,35 @@ def run_checkin(pnr: str, airline_code: str, last_name: str, headless: bool = Fa
         shutil.copy2(chrome_cookies, f"{tmp_profile}/Default/Cookies")
         print("  Using Chrome cookies for session continuity.")
 
+    # Use system Chromium if Chrome channel not found (e.g. remote/cloud environments)
+    import shutil as _shutil
+    _chromium_exec = "/opt/pw-browsers/chromium/chrome" if os.path.exists("/opt/pw-browsers/chromium/chrome") else None
+    # Also check common Playwright chromium paths
+    if _chromium_exec is None:
+        import glob as _glob
+        _hits = _glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome")
+        if _hits:
+            _chromium_exec = _hits[0]
+
+    _launch_kwargs = dict(
+        headless=headless,
+        slow_mo=200,
+        viewport={"width": 1280, "height": 800},
+    )
+    if _chromium_exec:
+        _launch_kwargs["executable_path"] = _chromium_exec
+
     with sync_playwright() as p:
-        context = p.chromium.launch_persistent_context(
-            user_data_dir=tmp_profile,
-            channel="chrome",
-            headless=headless,
-            slow_mo=200,
-            viewport={"width": 1280, "height": 800},
-        )
+        try:
+            context = p.chromium.launch_persistent_context(
+                user_data_dir=tmp_profile,
+                channel="chrome",
+                **_launch_kwargs,
+            )
+        except Exception:
+            # Fallback: launch without persistent context using available Chromium
+            browser = p.chromium.launch(**{k: v for k, v in _launch_kwargs.items() if k != "viewport"})
+            context = browser.new_context(viewport={"width": 1280, "height": 800})
         page = context.new_page()
 
         success = module.checkin(page, pnr, last_name, prefs)
